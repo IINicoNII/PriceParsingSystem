@@ -23,7 +23,7 @@ class PriceHistory(Base):
     price = Column(Float)
     date = Column(DateTime, default=datetime.now)
 
-engine = create_engine('PostgreSQL:///prices.db')
+engine = create_engine('PostgreSQL:///prices.db') # прописать по другому( в данном случае это для SQLite)
 Base.metadata.create_all(engine)
 
 Session = sessionmaker(bind=engine)
