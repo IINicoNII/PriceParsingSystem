@@ -1,6 +1,5 @@
 from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
-
 from datetime import datetime
 
 Base = declarative_base()
@@ -8,6 +7,7 @@ Base = declarative_base()
 
 class Product(Base):
     __tablename__ = "products"
+
     id = Column(Integer, primary_key=True)
     name = Column(String)
     url = Column(String, unique=True)
@@ -23,8 +23,14 @@ class PriceHistory(Base):
     price = Column(Float)
     date = Column(DateTime, default=datetime.now)
 
-engine = create_engine('PostgreSQL:///prices.db') # прописать по другому( в данном случае это для SQLite)
-Base.metadata.create_all(engine)
+DATABASE_URL = "postgresql://postgres:14Lb!Dj08@@localhost/price_tracker"
 
-Session = sessionmaker(bind=engine)
-session = Session()
+engine = create_engine(DATABASE_URL)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+def init_db():
+    Base.metadata.create_all(bind=engine)
+
+if __name__ == "__main__":
+    init_db()
+    print("База данных и таблицы созданы!")
