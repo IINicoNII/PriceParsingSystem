@@ -1,5 +1,5 @@
-from datetime import datetime
-from database import SessionLocal, Product, PriceHistory
+from DataBase.SQLDataStorage import SessionLocal, Product, PriceHistory
+from sqlalchemy import text
 
 # 1. Создаём сессию
 db = SessionLocal()
@@ -28,7 +28,7 @@ def add_product(name: str, url: str, price: float):
 
 # 3. Обновляем цену товара
 def update_price(product_id: int, new_price: float):
-    product = db.query(Product).get(product_id)
+    product = db.get(Product, product_id)
     if not product:
         print("Товар не найден!")
         return
@@ -53,14 +53,7 @@ def get_products():
     for product in products:
         print(f"{product.id}: {product.name} ({product.current_price} руб.)")
 
-
-# 5. Тестируем
-if __name__ == "__main__":
-    add_product("iPhone 15", "https://amazon.com/iphone15", 999.99)
-    add_product("Samsung S23", "https://amazon.com/s23", 799.99)
-
-    update_price(1, 899.99)  # Обновляем цену iPhone
-
-    get_products()  # Вывод всех товаров
-
-    db.close()  # Закрываем сессию
+def truncate_products():
+    db.execute(text("TRUNCATE TABLE products RESTART IDENTITY CASCADE"))
+    db.commit()
+    print("Таблица products полностью очищена (сброс ID)")

@@ -23,7 +23,10 @@ class PriceHistory(Base):
     price = Column(Float)
     date = Column(DateTime, default=datetime.now)
 
-DATABASE_URL = "postgresql://postgres:14Lb!Dj08@@localhost/price_tracker"
+# эту строку настроил под себя
+# нужно создать пользователя в postgres и задать ему пароль
+# заменить в строке ниже "crunchy:123" на "[имя пользователя]:[пароль]"
+DATABASE_URL = "postgresql://crunchy:123@localhost/prices"
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
