@@ -56,9 +56,9 @@ def get_info_by_url(driver, url):
     soup = BeautifulSoup(page_source, 'lxml')
     product_name = soup.find('div', attrs={"data-widget":'webProductHeading'}).find('h1').text.strip().replace('\t','').replace('\n',' ')
     try:
-        ozon_card_price_elem = soup.find('span', string='с Ozon Картой').parent.find('div').find('span')
+        ozon_card_price_elem = soup.find('span', string='c Ozon Картой').parent.find('div').find('span')
         price_ozon_card = ozon_card_price_elem.text.strip() if ozon_card_price_elem else ''
-        price_elem = soup.find('span', string='без Ozon Карты').parent.parent.find('div').findAll('span')
+        price_elem = soup.find('span', string='без Ozon Карты').parent.parent.find('div').find_all('span')
         price_discount = price_elem[0].text.strip() if price_elem[0] else ''
         price_base = price_elem[1].text.strip() if price_elem[1] is not None else ''
     except:
@@ -67,18 +67,18 @@ def get_info_by_url(driver, url):
         price_base = None
 
     try:
-        soup.find('span', string='с Ozon Картой').parent.find('div').find('span')
+        soup.find('span', string='c Ozon Картой').parent.find('div').find('span')
     except AttributeError:
-        card_price_div = soup.find('div', attrs={'data-widget':'webPrice'}).findAll('span')
+        card_price_div = soup.find('div', attrs={'data-widget':'webPrice'}).find_all('span')
         price_base = card_price_div[0].text.strip()
         price_discount = card_price_div[1].text.strip()
 
 
-    output_dict['Артикул'] = product_id
+    output_dict['Артикул'] = int(product_id)
     output_dict['Название'] = product_name
-    output_dict['Базовая цена'] = price_base
-    output_dict['Цена со скидкой'] = price_discount
-    output_dict['Цена по карте'] = price_ozon_card
+    output_dict['Базовая цена'] = int(price_base[:-2])
+    output_dict['Цена со скидкой'] = int(price_discount[:-2])
+    output_dict['Цена по карте'] = int(price_ozon_card[:-2])
     return output_dict
 
 # получить информацию по артикулу
