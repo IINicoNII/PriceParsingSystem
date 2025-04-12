@@ -44,8 +44,53 @@ def get_products_links(item_name='каска туристическая'):
     driver.close()
     driver.quit()
 
+# получить информацию по ссылке
+def get_info_by_url(driver, url):
+    time.sleep(3)
+    driver.get(url)
+    time.sleep(3)
+    output_dict = {}
+    product_id = driver.find_element(By.XPATH, '//div[contains(text(), "Артикул: ")]').text.split('Артикул: ')[1]
+
+    page_source = str(driver.page_source)
+    soup = BeautifulSoup(page_source, 'lxml')
+    product_name = soup.find('div', attrs={"data-widget":'webProductHeading'}).find('h1').text.strip().replace('\t','').replace('\n',' ')
+    try:
+        ozon_card_price_elem = soup.find('span', string='с Ozon Картой').parent.find('div').find('span')
+        price_ozon_card = ozon_card_price_elem.text.strip() if ozon_card_price_elem else ''
+        price_elem = soup.find('span', string='без Ozon Карты').parent.parent.find('div').findAll('span')
+        price_discount = price_elem[0].text.strip() if price_elem[0] else ''
+        price_base = price_elem[1].text.strip() if price_elem[1] is not None else ''
+    except:
+        price_ozon_card = None
+        price_discount = None
+        price_base = None
+
+    try:
+        soup.find('span', string='с Ozon Картой').parent.find('div').find('span')
+    except AttributeError:
+        card_price_div = soup.find('div', attrs={'data-widget':'webPrice'}).findAll('span')
+        price_base = card_price_div[0].text.strip()
+        price_discount = card_price_div[1].text.strip()
+
+
+    output_dict['Артикул'] = product_id
+    output_dict['Название'] = product_name
+    output_dict['Базовая цена'] = price_base
+    output_dict['Цена со скидкой'] = price_discount
+    output_dict['Цена по карте'] = price_ozon_card
+    return output_dict
+
+# получить информацию по артикулу
+def get_info_by_id(driver, product_id):
+    pass
+
 def main():
-    get_products_links()
+    driver = uc.Chrome()
+    driver.implicitly_wait(5)
+    url = 'https://www.ozon.ru/product/bioherb-kokosovye-slivki-suhie-rastitelnye-250-g-761091846/?at=BrtzW6wkQuNpXKPqT77jox1cvM2p3AHWvlnKphJ7roOm&keywords=%D1%81%D1%83%D1%85%D0%BE%D0%B5+%D0%BA%D0%BE%D0%BA%D0%BE%D1%81%D0%BE%D0%B2%D0%BE%D0%B5+%D0%BC%D0%BE%D0%BB%D0%BE%D0%BA%D0%BE'
+    output = get_info_by_url(driver, url)
+    print(output)
 
 if __name__ == '__main__':
     main()
