@@ -36,7 +36,7 @@ def get_products():
         print(f"{product.ProductID}: {product.ProductName}")
 
 
-def truncate_products():
-    db.execute(text("TRUNCATE TABLE products RESTART IDENTITY CASCADE"))
-    db.commit()
-    print("Таблица products полностью очищена (сброс ID)")
+#def truncate_products():
+    #db.execute(text("TRUNCATE TABLE products RESTART IDENTITY CASCADE"))
+    #db.commit()
+    #print("Таблица products полностью очищена (сброс ID)")
