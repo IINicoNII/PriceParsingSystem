@@ -97,7 +97,6 @@ class OzonParser:
 
     # получить информацию по артикулу
     def get_info_by_id(self, product_id):
-        self.create_driver()
         self.driver.get(url='https://ozon.ru')
         time.sleep(5)
 
@@ -111,13 +110,16 @@ class OzonParser:
 
         output_dict = self.extract_info()
         output_dict['Артикул'] = int(product_id)
-        self.close_driver()
         return output_dict
+
 
 def main():
     parser = OzonParser()
-    output = parser.get_info_by_id(1280883309)
-    print(output)
+    try:
+        output = parser.get_info_by_id(1280883309)
+        print(output)
+    finally:
+        parser.close_driver()
 
 if __name__ == '__main__':
     main()
