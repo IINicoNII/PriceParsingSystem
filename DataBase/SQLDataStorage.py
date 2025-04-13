@@ -1,5 +1,6 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, create_engine
+from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, create_engine, Boolean,ARRAY
 from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy.dialects.postgresql import ARRAY as PG_ARRAY
 from datetime import datetime
 
 Base = declarative_base()
@@ -7,31 +8,22 @@ Base = declarative_base()
 
 class Product(Base):
     __tablename__ = "products"
-
-    id = Column(Integer, primary_key=True)
-    name = Column(String)
-    url = Column(String, unique=True)
-    current_price = Column(Float)
-    lowest_price = Column(Float)
-    last_updated = Column(DateTime, default=datetime.now)
-
-class PriceHistory(Base):
-    __tablename__ = "price_history"
-    id = Column(Integer, primary_key=True)
-    product_id = Column(Integer, ForeignKey("products.id"))
-    price = Column(Float)
-    date = Column(DateTime, default=datetime.now)
+    ID = Column(Integer, primary_key=True, autoincrement=True)
+    ProductName = Column(String)
+    ProductID = Column(Integer)
+    IsTracked = Column(Boolean)
+    LastTracked = Column(DateTime)
+    PriceBase = Column(PG_ARRAY(Integer))
+    PriceDiscount = Column(PG_ARRAY(Integer))
+    PriceCard = Column(PG_ARRAY(Integer))
 
 # нужно создать пользователя в postgres и задать ему пароль
 # заменить в строке ниже "crunchy:123" на "[имя пользователя]:[пароль]"
-DATABASE_URL = "postgresql://postgres:14Lb!Dj08@localhost:5432/currency_exchange_tracking_table"
+DATABASE_URL = "postgresql://postgres:14Lb!Dj08@localhost:5432/price_tracking"
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-def init_db():
-    Base.metadata.create_all(bind=engine)
 
 if __name__ == "__main__":
-    init_db()
     print("База данных и таблицы созданы!")
