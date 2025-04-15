@@ -1,9 +1,9 @@
-from sqlalchemy import create_engine, inspect
+from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime
 from DataBase.SQLDataStorage import DATABASE_URL,Product
 from Parsing.OZON import OzonParser
-
+from typing import List
 
 class DBManager:
     def __init__(self):
@@ -44,5 +44,22 @@ class DBManager:
         session.close()
 
 
+    def get_tracked_articles(self) -> List[str]:
+        session = self.Session()
+        stmt = select(Product.ProductID).where(Product.IsTracked)
+        result = session.execute(stmt)
+        session.close()
+        return [row[0] for row in result]
 
+
+    def update_all(self):
+        all_ID = self.get_tracked_articles()
+        for article in all_ID:
+            self.update_product(article)
+
+
+
+
+        #Обновить информацию для всех артикулие которую только что получили.
+        update_articl = select(Product)
 
