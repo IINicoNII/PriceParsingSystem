@@ -116,7 +116,7 @@ class OzonParser:
 def main():
     parser = OzonParser()
     try:
-        output = parser.get_info_by_id(1280883309)
+        output = parser.get_info_by_id(1821495135)
         print(output)
     finally:
         parser.close_driver()

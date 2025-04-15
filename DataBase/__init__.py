@@ -1,2 +1,2 @@
-from . import products_inout
 from . import SQLDataStorage
+from . import DBManager
