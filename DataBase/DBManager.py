@@ -23,7 +23,7 @@ class DBManager:
             PriceBase=[product_info['Базовая цена']],
             PriceDiscount=[product_info['Цена со скидкой']],
             PriceCard=[product_info['Цена по карте']],
-            LastTracked=datetime.now()
+            TrackingTime=[datetime.now()]
         )
         session.add(new_product)
         session.commit()
@@ -39,6 +39,7 @@ class DBManager:
         product.PriceBase = product.PriceBase + [product_info['Базовая цена']]
         product.PriceCard = product.PriceCard + [product_info['Цена по карте']]
         product.PriceDiscount = product.PriceDiscount + [product_info['Цена со скидкой']]
+        product.TrackingTime =  product.TrackingTime + [datetime.now()]
         session.commit()
         session.close()
 

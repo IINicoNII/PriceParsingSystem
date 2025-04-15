@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, create_engine, Boolean,ARRAY
+from sqlalchemy import Column, Integer, String, Time, create_engine, Boolean,ARRAY
 from sqlalchemy.orm import declarative_base, sessionmaker
 from sqlalchemy.dialects.postgresql import ARRAY as PG_ARRAY
 from datetime import datetime
@@ -12,7 +12,7 @@ class Product(Base):
     ProductName = Column(String)
     ProductID = Column(Integer)
     IsTracked = Column(Boolean)
-    LastTracked = Column(DateTime)
+    TrackingTime = Column(ARRAY(Time(timezone=False)))
     PriceBase = Column(PG_ARRAY(Integer))
     PriceDiscount = Column(PG_ARRAY(Integer))
     PriceCard = Column(PG_ARRAY(Integer))
