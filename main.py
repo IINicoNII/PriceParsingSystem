@@ -1,9 +1,6 @@
-from DataBase.products_inout import *
+from DataBase.DBManager import DBManager
 
 if __name__ == "__main__":
-    add_product("iPhone 15", 255, isTracked=True)
-    add_product("Samsung S23", 471, isTracked=False)
-
-    get_products()  # Вывод всех товаров
-    #truncate_products()
-    db.close()  # Закрываем сессию
+    db_manager = DBManager()
+    db_manager.update_product(1937862493)
+    #db_manager.update_product(339875290)

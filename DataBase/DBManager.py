@@ -30,4 +30,17 @@ class DBManager:
         session.close()
 
 
+    def update_product(self,productID):
+        session = self.Session()
+        inspector = OzonParser()
+        product_info = inspector.get_info_by_id(productID)
+        product = session.query(Product).filter_by(ProductID=productID).first()
+        product.ProductName = product_info['Название']
+        product.PriceBase = product.PriceBase + [product_info['Базовая цена']]
+        product.PriceCard = product.PriceCard + [product_info['Цена по карте']]
+        product.PriceDiscount = product.PriceDiscount + [product_info['Цена со скидкой']]
+        session.commit()
+        session.close()
+
+
 
