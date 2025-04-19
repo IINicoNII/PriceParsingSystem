@@ -71,7 +71,7 @@ class DBManager:
             self.update_product(article)
 
     def scheduler(self):
-        schedule.every().day.at('09:00').do(self.update_all)
+        schedule.every().day.at('11:56').do(self.update_all)
         schedule.every().day.at('18:00').do(self.update_all)
         while True:
             schedule.run_pending()

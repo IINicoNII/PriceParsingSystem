@@ -1,7 +1,7 @@
 from DataBase.DBManager import DBManager
+import threading
 
 if __name__ == "__main__":
     db_manager = DBManager()
-    db_manager.add_product(1827580929, isTracked=False)
-    db_manager.add_product(1937862493)
-    db_manager.update_all()
+    #threading.Thread(target=db_manager.scheduler,daemon=True).start()
+    db_manager.scheduler()
