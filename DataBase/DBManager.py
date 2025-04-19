@@ -4,6 +4,9 @@ from datetime import datetime
 from DataBase.SQLDataStorage import DATABASE_URL,Product
 from Parsing.OZON import OzonParser
 from typing import List
+import schedule
+import time
+
 
 class DBManager:
     def __init__(self):
@@ -38,7 +41,6 @@ class DBManager:
             print(f'Ошибка при добавлении товара {productID}: {str(e)}')
             return False
 
-
     def update_product(self, productID):
         session = self.Session()
         inspector = OzonParser()
@@ -56,7 +58,6 @@ class DBManager:
             print('Товар с артикулом {} не отслеживается!'.format(productID))
         session.close()
 
-
     def get_tracked_articles(self) -> List[str]:
         session = self.Session()
         stmt = select(Product.ProductID).where(Product.IsTracked)
@@ -64,8 +65,14 @@ class DBManager:
         session.close()
         return [row[0] for row in result]
 
-
     def update_all(self):
         all_ID = self.get_tracked_articles()
         for article in all_ID:
             self.update_product(article)
+
+    def scheduler(self):
+        schedule.every().day.at('09:00').do(self.update_all)
+        schedule.every().day.at('18:00').do(self.update_all)
+        while True:
+            schedule.run_pending()
+            time.sleep(10)
