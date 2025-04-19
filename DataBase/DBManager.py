@@ -56,10 +56,3 @@ class DBManager:
         all_ID = self.get_tracked_articles()
         for article in all_ID:
             self.update_product(article)
-
-
-
-
-        #Обновить информацию для всех артикулие которую только что получили.
-        update_articl = select(Product)
-
