@@ -10,37 +10,50 @@ class DBManager:
         self.engine = create_engine(DATABASE_URL)
         self.Session = sessionmaker(bind=self.engine)
 
+    def add_product(self, productID, isTracked=True):
+        try:
+            with self.Session() as session, session.begin():
+                # Проверка существования артикула
+                if session.query(Product).filter_by(ProductID=productID).first():
+                    print(f'Товар с артикулом {productID} уже есть в БД!')
+                    return False
 
-    def add_product(self,productID):
-        session = self.Session()
-        inspector = OzonParser()
-        product_info = inspector.get_info_by_id(productID)
+                inspector = OzonParser()
+                product_info = inspector.get_info_by_id(productID)
 
-        new_product = Product(
-            ProductName = product_info['Название'],
-            ProductID=productID,
-            IsTracked=True,
-            PriceBase=[product_info['Базовая цена']],
-            PriceDiscount=[product_info['Цена со скидкой']],
-            PriceCard=[product_info['Цена по карте']],
-            TrackingTime=[datetime.now()]
-        )
-        session.add(new_product)
-        session.commit()
-        session.close()
+                new_product = Product(
+                    ProductName=product_info['Название'],
+                    ProductID=productID,
+                    IsTracked=isTracked,
+                    PriceBase=[product_info['Базовая цена']],
+                    PriceDiscount=[product_info['Цена со скидкой']],
+                    PriceCard=[product_info['Цена по карте']],
+                    TrackingTime=[datetime.now()]
+                )
+                session.add(new_product)
+                print(f'Артикул {productID} добавлен в БД!')
+                return True
+
+        except Exception as e:
+            print(f'Ошибка при добавлении товара {productID}: {str(e)}')
+            return False
 
 
-    def update_product(self,productID):
+    def update_product(self, productID):
         session = self.Session()
         inspector = OzonParser()
         product_info = inspector.get_info_by_id(productID)
         product = session.query(Product).filter_by(ProductID=productID).first()
-        product.ProductName = product_info['Название']
-        product.PriceBase = product.PriceBase + [product_info['Базовая цена']]
-        product.PriceCard = product.PriceCard + [product_info['Цена по карте']]
-        product.PriceDiscount = product.PriceDiscount + [product_info['Цена со скидкой']]
-        product.TrackingTime =  product.TrackingTime + [datetime.now()]
-        session.commit()
+        if product.IsTracked:
+            product.ProductName = product_info['Название']
+            product.PriceBase = product.PriceBase + [product_info['Базовая цена']]
+            product.PriceCard = product.PriceCard + [product_info['Цена по карте']]
+            product.PriceDiscount = product.PriceDiscount + [product_info['Цена со скидкой']]
+            product.TrackingTime =  product.TrackingTime + [datetime.now()]
+            session.commit()
+            print('Информация о товаре с артикулом {} обновлена!'.format(productID))
+        else:
+            print('Товар с артикулом {} не отслеживается!'.format(productID))
         session.close()
 
 
