@@ -1,7 +1,6 @@
 from sqlalchemy import Column, Integer, String, DateTime, create_engine, Boolean,ARRAY
 from sqlalchemy.orm import declarative_base, sessionmaker
 from sqlalchemy.dialects.postgresql import ARRAY as PG_ARRAY
-from datetime import datetime
 
 Base = declarative_base()
 

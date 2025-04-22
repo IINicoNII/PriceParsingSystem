@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime
-from DataBase.SQLDataStorage import DATABASE_URL,Product
+from DataBase.SQLDataStorage import DATABASE_URL, Product
 from Parsing.OZON import OzonParser
 from typing import List
 import schedule
