@@ -23,9 +23,17 @@ def gaibian_product_id(message):
         db_manager.add_product(product_ID)
         bot.send_message(message.chat.id, f'Товар с артикулом {product_ID} добавлен для отслеживания',reply_markup=gen_markup())
         # если товар уже есть в базе данных, переключить isTracked на True если он был False
+    else:
+        db_manager.add_product(product_ID, True)
+        bot.send_message(message.chat.id,f'Товар с артикулом {product_ID} уже был в базе, теперь отслеживается')
     if user_states[0] == 'remove':
-        pass
+        if  db_manager.add_product(product_ID):
+            db_manager.update_product(product_ID, False)
+            bot.send_message(message.chat.id, f'Товар {product_ID} больше не отслеживается')
         # мы перестаем отслеживать товар
+        else:
+            bot.send_message(message.chat.id, f'Товар {product_ID} не найден в базе')
+
 
 
 @bot.message_handler(func=lambda message: True)
