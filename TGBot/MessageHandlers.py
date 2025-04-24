@@ -5,6 +5,7 @@ def gen_markup():
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     markup.add('Добавить новый артикул')
     markup.add('Удалить артикул')
+    markup.add('Отслеживать товар по артикулу')
     return markup
 @bot.message_handler(func=lambda message: 'Добавить новый артикул' in message.text)
 def add_product_id(message):
