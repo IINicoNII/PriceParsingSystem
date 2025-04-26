@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime
-from DataBase.SQLDataStorage import DATABASE_URL, Product
+from DataBase.SQLDataStorage import DATABASE_URL, Product,User
 from Parsing.OZON import OzonParser
 from typing import List
 import schedule
@@ -58,6 +58,20 @@ class DBManager:
             print('Товар с артикулом {} не отслеживается!'.format(productID))
         session.close()
 
+    def start_tracking(self, productID):
+        session = self.Session()
+        product = session.query(Product).filter_by(ProductID=productID).first()
+        product.IsTracked = True
+        session.commit()
+        session.close()
+
+    def stop_tracking(self, productID):
+        session = self.Session()
+        product = session.query(Product).filter_by(ProductID=productID).first()
+        product.IsTracked = False
+        session.commit()
+        session.close()
+
     def get_tracked_articles(self) -> List[str]:
         session = self.Session()
         stmt = select(Product.ProductID).where(Product.IsTracked)
@@ -76,3 +90,39 @@ class DBManager:
         while True:
             schedule.run_pending()
             time.sleep(10)
+
+    def check_exists(self, productID):
+        session = self.Session()
+        result = session.query(Product).filter_by(ProductID=productID).first()
+        session.close()
+        return bool(result)
+
+    def register_user(self,chatID):
+        session = self.Session()
+        new_user = User(
+            ChatID = chatID,
+            TrackedProducts=[]
+        )
+        session.add(new_user)
+        session.commit()
+        session.close( )
+        print(f'Пользователь {chatID} добавлен в БД!')
+
+    def check_exists_user(self, chatID):
+        session = self.Session()
+        result = session.query(User).filter_by(ChatID=chatID).first()
+        session.close()
+        return bool(result)
+
+    def link_product_to_user(self, productID, chatID):
+        self.add_product(productID)
+        if not self.check_exists_user(chatID):
+            self.register_user(chatID)
+        session = self.Session()
+        user = session.query(User).filter_by(ChatID=chatID).first()
+        user.TrackedProducts = user.TrackedProducts + [productID]
+        session.commit()
+        session.close()
+
+
+
