@@ -21,10 +21,13 @@ def add_product_id(message):
 def change_product_id(message):
     product_ID = int(message.text)
     if user_states[0] == 'add':
+        if db_manager.
         if db_manager.check_exists(product_ID):
             db_manager.start_tracking(product_ID)
+
         else:
             db_manager.add_product(product_ID)
+            db_manager.start_tracking(product_ID)
     db_manager.link_product_to_user(product_ID, message.chat.id)
     bot.send_message(message.chat.id, f'Товар с артикулом {product_ID} добавлен для отслеживания',
                      reply_markup=gen_markup())

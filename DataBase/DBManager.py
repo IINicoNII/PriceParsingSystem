@@ -124,5 +124,7 @@ class DBManager:
         session.commit()
         session.close()
 
-
+    def user_traking_product(self, chatID, productID):
+        session = self.Session()
+            if self.check_exists_user(chatID):
 
