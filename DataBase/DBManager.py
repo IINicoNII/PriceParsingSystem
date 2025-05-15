@@ -124,6 +124,14 @@ class DBManager:
         session.commit()
         session.close()
 
+    def remove_product_from_user(self, productID, chatID):
+        session =self.Session()
+        user = session.query(User).filter_by(ChatID=chatID).first()
+        products = user.TrackedProducts.copy()
+        products.remove(productID)
+        session.commit()
+        session.close()
+
     def user_traking_product(self, chatID, productID):
         """
         Метод для получения информации отслеживает ли пользователь артикул или нет
@@ -133,6 +141,7 @@ class DBManager:
         """
         session = self.Session()
         user = session.query(User).filter_by(ChatID=chatID).first()
+        session.close()
         if productID in user.TrackedProducts:
              return True
         return False
@@ -141,6 +150,7 @@ class DBManager:
     def get_all_users(self):
         session = self.Session()
         user_list = session.query(User.chat_id).all()
+        session.close()
         return [row[0] for row in user_list]
 
 
