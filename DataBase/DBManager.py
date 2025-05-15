@@ -125,6 +125,16 @@ class DBManager:
         session.close()
 
     def user_traking_product(self, chatID, productID):
+        """
+        Метод для получения информации отслеживает ли пользователь артикул или нет
+        :param chatID:
+        :param productID:
+        :return:
+        """
         session = self.Session()
-            if self.check_exists_user(chatID):
+        user = session.query(User).filter_by(ChatID=chatID).first()
+        if productID in user.TrackedProducts:
+             return True
+        return False
+
 
