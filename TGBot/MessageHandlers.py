@@ -21,20 +21,30 @@ def add_product_id(message):
 def change_product_id(message):
     product_ID = int(message.text)
     if user_states[0] == 'add':
-        if db_manager.
-        if db_manager.check_exists(product_ID):
-            db_manager.start_tracking(product_ID)
-
+        if not db_manager.user_traking_product(message.chat.id, product_ID):
+            if db_manager.check_exists(product_ID):
+                db_manager.start_tracking(product_ID)
+            else:
+                db_manager.add_product(product_ID)
+                db_manager.start_tracking(product_ID)
+            db_manager.link_product_to_user(product_ID, message.chat.id)
+            bot.send_message(message.chat.id, f'Товар с артикулом {product_ID} добавлен для отслеживания',
+                             reply_markup=gen_markup())
         else:
-            db_manager.add_product(product_ID)
-            db_manager.start_tracking(product_ID)
-    db_manager.link_product_to_user(product_ID, message.chat.id)
-    bot.send_message(message.chat.id, f'Товар с артикулом {product_ID} добавлен для отслеживания',
-                     reply_markup=gen_markup())
+            bot.send_message(message.chat.id, f'Товар с артикулом {product_ID} уже отслеживается',
+                             reply_markup=gen_markup())
+
 
     if user_states[0] == 'remove':
-        if db_manager.add_product(product_ID):
-            db_manager.update_product(product_ID, False)
+        if db_manager.check_exists(product_ID):
+            db_manager.remove_product_from_user(product_ID, message.chat.id)
+            users = db_manager.get_all_users()
+            is_tracked = False
+            for chatID in users:
+                if db_manager.user_traking_product(chatID, product_ID):
+                    is_tracked = True
+            if not is_tracked:
+                db_manager.stop_tracking(product_ID)
             bot.send_message(message.chat.id, f'Товар {product_ID} больше не отслеживается')
         # мы перестаем отслеживать товар
         else:
