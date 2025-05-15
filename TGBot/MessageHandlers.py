@@ -36,7 +36,11 @@ def change_product_id(message):
 
 
     if user_states[0] == 'remove':
-        if db_manager.check_exists(product_ID):
+        if not db_manager.check_exists(product_ID):
+            bot.send_message(message.chat.id, f'Товар с артикулом {product_ID} не найден в базе', reply_markup=gen_markup())
+        elif not db_manager.user_traking_product(product_ID, message.chat.id):
+            bot.send_message(message.chat.id, f'Товар с артикулом {product_ID} в настоящий момент не отслеживается', reply_markup=gen_markup())
+        else:
             db_manager.remove_product_from_user(product_ID, message.chat.id)
             users = db_manager.get_all_users()
             is_tracked = False
@@ -45,10 +49,7 @@ def change_product_id(message):
                     is_tracked = True
             if not is_tracked:
                 db_manager.stop_tracking(product_ID)
-            bot.send_message(message.chat.id, f'Товар {product_ID} больше не отслеживается')
-        # мы перестаем отслеживать товар
-        else:
-            bot.send_message(message.chat.id, f'Товар {product_ID} не найден в базе')
+            bot.send_message(message.chat.id, f'Товар с артикулом {product_ID} больше не отслеживается')
 
 
 
