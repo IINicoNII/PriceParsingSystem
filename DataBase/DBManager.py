@@ -138,3 +138,9 @@ class DBManager:
         return False
 
 
+    def get_all_users(self):
+        session = self.Session()
+        user_list = session.query(User.chat_id).all()
+        return [row[0] for row in user_list]
+
+
