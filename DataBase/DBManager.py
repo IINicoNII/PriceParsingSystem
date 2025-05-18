@@ -42,21 +42,24 @@ class DBManager:
             return False
 
     def update_product(self, productID):
-        session = self.Session()
-        inspector = OzonParser()
-        product_info = inspector.get_info_by_id(productID)
-        product = session.query(Product).filter_by(ProductID=productID).first()
-        if product.IsTracked:
-            product.ProductName = product_info['Название']
-            product.PriceBase = product.PriceBase + [product_info['Базовая цена']]
-            product.PriceCard = product.PriceCard + [product_info['Цена по карте']]
-            product.PriceDiscount = product.PriceDiscount + [product_info['Цена со скидкой']]
-            product.TrackingTime =  product.TrackingTime + [datetime.now()]
-            session.commit()
-            print('Информация о товаре с артикулом {} обновлена!'.format(productID))
+        if not self.check_exists(productID):
+            self.add_product(productID)
         else:
-            print('Товар с артикулом {} не отслеживается!'.format(productID))
-        session.close()
+            session = self.Session()
+            inspector = OzonParser()
+            product_info = inspector.get_info_by_id(productID)
+            product = session.query(Product).filter_by(ProductID=productID).first()
+            if product.IsTracked:
+                product.ProductName = product_info['Название']
+                product.PriceBase = product.PriceBase + [product_info['Базовая цена']]
+                product.PriceCard = product.PriceCard + [product_info['Цена по карте']]
+                product.PriceDiscount = product.PriceDiscount + [product_info['Цена со скидкой']]
+                product.TrackingTime =  product.TrackingTime + [datetime.now()]
+                session.commit()
+                print('Информация о товаре с артикулом {} обновлена!'.format(productID))
+            else:
+                print('Товар с артикулом {} не отслеживается!'.format(productID))
+            session.close()
 
     def start_tracking(self, productID):
         session = self.Session()
@@ -129,10 +132,11 @@ class DBManager:
         user = session.query(User).filter_by(ChatID=chatID).first()
         products = user.TrackedProducts.copy()
         products.remove(productID)
+        user.TrackedProducts = products
         session.commit()
         session.close()
 
-    def user_traking_product(self, chatID, productID):
+    def user_traking_product(self, productID, chatID):
         """
         Метод для получения информации отслеживает ли пользователь артикул или нет
         :param chatID:
@@ -149,8 +153,42 @@ class DBManager:
 
     def get_all_users(self):
         session = self.Session()
-        user_list = session.query(User.chat_id).all()
+        user_list = session.query(User.ChatID).all()
         session.close()
         return [row[0] for row in user_list]
+
+
+    def fetch_all_states(self):
+        """
+        подгрузка состояний при запуске бота,
+        :return: состояние пользователей из БД
+        """
+        session = self.Session()
+        user_list = session.query(User.ChatID, User.State).all()
+        data_dict = {row.column1: row.column2 for row in user_list}
+        session.close()
+        return data_dict
+
+
+
+
+    def update_state_db(self, ChatID, new_state):
+        """
+        обновление состояний пользователя
+
+        """
+        session = self.Session()
+        user = session.query(User).filter_by(ChatID=ChatID).first()
+        user.State = new_state
+        session.commit()
+        session.close()
+
+
+
+
+
+
+
+
 
 
