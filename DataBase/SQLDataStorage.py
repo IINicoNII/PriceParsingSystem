@@ -22,6 +22,7 @@ class User(Base):
     ID = Column(Integer, primary_key=True, autoincrement=True)
     ChatID = Column(Integer)
     TrackedProducts = Column(PG_ARRAY(Integer))
+    State = Column(String)
 
 # нужно создать пользователя в postgres и задать ему пароль
 # заменить в строке ниже "crunchy:123" на "[имя пользователя]:[пароль]"

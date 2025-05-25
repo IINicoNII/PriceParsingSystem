@@ -165,7 +165,7 @@ class DBManager:
         """
         session = self.Session()
         user_list = session.query(User.ChatID, User.State).all()
-        data_dict = {row.column1: row.column2 for row in user_list}
+        data_dict = {row.ChatID: row.State for row in user_list}
         session.close()
         return data_dict
 
