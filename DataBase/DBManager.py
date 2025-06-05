@@ -13,7 +13,7 @@ class DBManager:
         self.engine = create_engine(DATABASE_URL)
         self.Session = sessionmaker(bind=self.engine)
 
-    def add_product(self, productID, isTracked=True):
+    def add_product(self, productID, isTracked=False):
         try:
             with self.Session() as session, session.begin():
                 # Проверка существования артикула
@@ -21,19 +21,20 @@ class DBManager:
                     print(f'Товар с артикулом {productID} уже есть в БД!')
                     return False
 
-                inspector = OzonParser()
-                product_info = inspector.get_info_by_id(productID)
+                #inspector = OzonParser()
+                #product_info = inspector.get_info_by_id(productID)
 
                 new_product = Product(
-                    ProductName=product_info['Название'],
+                    ProductName=None,
                     ProductID=productID,
                     IsTracked=isTracked,
-                    PriceBase=[product_info['Базовая цена']],
-                    PriceDiscount=[product_info['Цена со скидкой']],
-                    PriceCard=[product_info['Цена по карте']],
-                    TrackingTime=[datetime.now()]
+                    PriceBase=[],
+                    PriceDiscount=[],
+                    PriceCard=[],
+                    TrackingTime=[]
                 )
                 session.add(new_product)
+                session.commit()
                 print(f'Артикул {productID} добавлен в БД!')
                 return True
 
@@ -44,22 +45,21 @@ class DBManager:
     def update_product(self, productID):
         if not self.check_exists(productID):
             self.add_product(productID)
-        else:
-            session = self.Session()
+        session = self.Session()
+        product = session.query(Product).filter_by(ProductID=productID).first()
+        if product.IsTracked:
             inspector = OzonParser()
             product_info = inspector.get_info_by_id(productID)
-            product = session.query(Product).filter_by(ProductID=productID).first()
-            if product.IsTracked:
-                product.ProductName = product_info['Название']
-                product.PriceBase = product.PriceBase + [product_info['Базовая цена']]
-                product.PriceCard = product.PriceCard + [product_info['Цена по карте']]
-                product.PriceDiscount = product.PriceDiscount + [product_info['Цена со скидкой']]
-                product.TrackingTime =  product.TrackingTime + [datetime.now()]
-                session.commit()
-                print('Информация о товаре с артикулом {} обновлена!'.format(productID))
-            else:
-                print('Товар с артикулом {} не отслеживается!'.format(productID))
-            session.close()
+            product.ProductName = product_info['Название']
+            product.PriceBase = product.PriceBase + [product_info['Базовая цена']]
+            product.PriceCard = product.PriceCard + [product_info['Цена по карте']]
+            product.PriceDiscount = product.PriceDiscount + [product_info['Цена со скидкой']]
+            product.TrackingTime =  product.TrackingTime + [datetime.now()]
+            session.commit()
+            print('Информация о товаре с артикулом {} обновлена!'.format(productID))
+        else:
+            print('Товар с артикулом {} не отслеживается!'.format(productID))
+        session.close()
 
     def start_tracking(self, productID):
         session = self.Session()
@@ -118,7 +118,8 @@ class DBManager:
         return bool(result)
 
     def link_product_to_user(self, productID, chatID):
-        self.add_product(productID)
+        if not self.check_exists(productID):
+            self.add_product(productID)
         if not self.check_exists_user(chatID):
             self.register_user(chatID)
         session = self.Session()
