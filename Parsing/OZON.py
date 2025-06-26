@@ -99,6 +99,7 @@ class OzonParser:
         #self.display.stop()
 
     def extract_info(self):
+        print('extracting info...')
         page_source = str(self.driver.page_source)
         soup = BeautifulSoup(page_source, 'lxml')
         product_name = soup.find('div', attrs={"data-widget": 'webProductHeading'}).find('h1').text.strip().replace('\t',
@@ -145,6 +146,7 @@ class OzonParser:
 
     # получить информацию по артикулу
     def get_info_by_id(self, product_id):
+        print(f'downloading info for {product_id}...')
         time.sleep(random.uniform(2, 4))
         self.driver.get(url='https://ozon.ru')
         time.sleep(random.uniform(3, 7))
