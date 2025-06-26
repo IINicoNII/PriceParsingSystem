@@ -1,6 +1,5 @@
 import json
 import time
-import undetected_chromedriver as uc
 from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
