@@ -1,64 +1,85 @@
-import json
+import tempfile
+import shutil
+import random
 import time
+import json
 from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-import selenium_stealth
-import random
 from selenium.webdriver.common.action_chains import ActionChains
+import selenium_stealth
 from pyvirtualdisplay import Display
 
 class OzonParser:
     def __init__(self):
-        self.driver= self.create_driver()
         self.display = Display(visible=0, size=(1920, 1080))
+        self.display.start()
+        self.temp_dir = tempfile.mkdtemp()
+        self.driver = self.create_driver()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close_driver()
+        return False
 
     def create_driver(self):
         options = Options()
 
-        #ua = UserAgent()
-        #options.add_argument(f"user-agent={ua.random}")
+        # 🔹 Уникальный каталог для данных пользователя
+        options.add_argument(f"--user-data-dir={self.temp_dir}")
 
-        # 🔹 Основные аргументы для headless
-        #options.add_argument("--headless=new")  # Используй новый headless (Chrome 109+)
-        options.add_argument("--window-size=1920,1080")  # Указываем размер окна
-        options.add_argument("--disable-blink-features=AutomationControlled")  # Скрываем автоматизацию
-
-        # 🔹 Отключение следов автоматизации
+        # 🔹 Основные настройки
+        options.add_argument("--window-size=1920,1080")
+        options.add_argument("--disable-blink-features=AutomationControlled")
         options.add_argument("--disable-infobars")
         options.add_argument("--disable-automation")
         options.add_argument("--disable-dev-shm-usage")
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-gpu")
         options.add_argument("--dns-prefetch-disable")
-        #options.add_argument("--user-data-dir=/home/crunchy/.config/google-chrome")
-        options.add_argument("--profile-directory=Default")
-
-        # 🔹 Локализация и User-Agent
         options.add_argument("--lang=en-US")
         options.add_argument(
             "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36")
 
-        # 🔹 Скрытие флагов автоматизации
         options.add_experimental_option("excludeSwitches", ["enable-automation"])
         options.add_experimental_option("useAutomationExtension", False)
 
         driver = webdriver.Chrome(options=options)
 
-        selenium_stealth.stealth(driver,
-                                 languages=["en-US", "en"],
-                                 vendor="Google Inc.",
-                                 platform="Win32",
-                                 webgl_vendor="Intel Inc.",
-                                 renderer="Intel Iris OpenGL Engine",
-                                 fix_hairline=True,
-                                 )
+        selenium_stealth.stealth(
+            driver,
+            languages=["en-US", "en"],
+            vendor="Google Inc.",
+            platform="Win32",
+            webgl_vendor="Intel Inc.",
+            renderer="Intel Iris OpenGL Engine",
+            fix_hairline=True,
+        )
         return driver
 
     def close_driver(self):
-        self.driver.quit()
+        if self.driver:
+            try:
+                self.driver.quit()
+            except:
+                pass
+            self.driver = None
+
+        if self.display:
+            try:
+                self.display.stop()
+            except:
+                pass
+
+        if self.temp_dir:
+            try:
+                shutil.rmtree(self.temp_dir, ignore_errors=True)
+            except:
+                pass
 
     #функция списана из видео -- пока не работает, видимо на озоне что-то поменяли с тех пор
     def get_products_links(self, item_name='каска туристическая'):
@@ -97,6 +118,9 @@ class OzonParser:
         self.close_driver()
         #self.display.stop()
 
+    def __del__(self):
+        self.close_driver()
+
     def extract_info(self):
         print('extracting info...')
         page_source = str(self.driver.page_source)
@@ -131,45 +155,46 @@ class OzonParser:
 
     # получить информацию по ссылке
     def get_info_by_url(self, url):
-        self.display.start()
-        self.create_driver()
-        time.sleep(random.uniform(2, 4))
-        self.driver.get(url)
-        time.sleep(random.uniform(2, 4))
-        product_id = self.driver.find_element(By.XPATH, '//div[contains(text(), "Артикул: ")]').text.split('Артикул: ')[1]
-        output_dict = self.extract_info()
-        output_dict['Артикул'] = int(product_id)
-        self.close_driver()
-        self.display.stop()
-        return output_dict
+        try:
+            self.driver.get(url)
+            time.sleep(random.uniform(2, 4))
+            product_id = self.driver.find_element(By.XPATH, '//div[contains(text(), "Артикул: ")]').text.split('Артикул: ')[1]
+            output_dict = self.extract_info()
+            output_dict['Артикул'] = int(product_id)
+            return output_dict
+        except Exception as e:
+            print(f"Ошибка при получении данных по URL: {e}")
+            return {}
 
     # получить информацию по артикулу
     def get_info_by_id(self, product_id):
-        print(f'downloading info for {product_id}...')
-        time.sleep(random.uniform(2, 4))
-        self.driver.get(url='https://ozon.ru')
-        time.sleep(random.uniform(3, 7))
-        print(self.driver.title)
-        #print(self.driver.page_source)
+        try:
+            self.driver.get('https://ozon.ru')
+            time.sleep(random.uniform(3, 5))
 
+            find_input = self.driver.find_element(By.NAME, 'text')
+            find_input.clear()
+            find_input.send_keys(str(product_id))
+            time.sleep(random.uniform(1, 2))
 
-        find_input = self.driver.find_element(By.NAME, 'text')
-        find_input.clear()
-        find_input.send_keys(str(product_id))
-        #print(self.driver.page_source)
-        time.sleep(random.uniform(1, 3))
-        action = ActionChains(self.driver)
-        action.move_by_offset(int(random.uniform(10,30)), int(random.uniform(10,30))).perform()
-        time.sleep(random.uniform(0, 2))
-        action.move_by_offset(int(random.uniform(10,30)), int(random.uniform(10,30))).perform()
-        time.sleep(random.uniform(0, 2))
-        find_input.send_keys(Keys.ENTER)
-        time.sleep(random.uniform(3, 7))
-        print(self.driver.title)
-        #self.driver.save_screenshot('page.png')
-        output_dict = self.extract_info()
-        output_dict['Артикул'] = int(product_id)
-        return output_dict
+            # Имитация человеческих действий
+            action = ActionChains(self.driver)
+            for _ in range(2):
+                action.move_by_offset(
+                    random.randint(10, 30),
+                    random.randint(10, 30)
+                ).perform()
+                time.sleep(random.uniform(0.1, 0.3))
+
+            find_input.send_keys(Keys.ENTER)
+            time.sleep(random.uniform(3, 5))
+
+            output_dict = self.extract_info()
+            output_dict['Артикул'] = int(product_id)
+            return output_dict
+        except Exception as e:
+            print(f"Ошибка при получении данных по артикулу {product_id}: {e}")
+            return {}
 
 
 def main():

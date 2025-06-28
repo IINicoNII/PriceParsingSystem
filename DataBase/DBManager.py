@@ -46,20 +46,26 @@ class DBManager:
         if not self.check_exists(productID):
             self.add_product(productID)
         session = self.Session()
-        product = session.query(Product).filter_by(ProductID=productID).first()
-        if product.IsTracked:
-            inspector = OzonParser()
-            product_info = inspector.get_info_by_id(productID)
-            product.ProductName = product_info['Название']
-            product.PriceBase = product.PriceBase + [product_info['Базовая цена']]
-            product.PriceCard = product.PriceCard + [product_info['Цена по карте']]
-            product.PriceDiscount = product.PriceDiscount + [product_info['Цена со скидкой']]
-            product.TrackingTime =  product.TrackingTime + [datetime.now()]
-            session.commit()
-            print('Информация о товаре с артикулом {} обновлена!'.format(productID))
-        else:
-            print('Товар с артикулом {} не отслеживается!'.format(productID))
-        session.close()
+        try:
+            product = session.query(Product).filter_by(ProductID=productID).first()
+            if not product.IsTracked:
+                print('Товар с артикулом {} не отслеживается!'.format(productID))
+                return
+
+            with OzonParser() as inspector:
+                product_info = inspector.get_info_by_id(productID)
+                product.ProductName = product_info['Название']
+                product.PriceBase = product.PriceBase + [product_info['Базовая цена']]
+                product.PriceCard = product.PriceCard + [product_info['Цена по карте']]
+                product.PriceDiscount = product.PriceDiscount + [product_info['Цена со скидкой']]
+                product.TrackingTime =  product.TrackingTime + [datetime.now()]
+                session.commit()
+                print('Информация о товаре с артикулом {} обновлена!'.format(productID))
+        except Exception as e:
+            session.rollback()
+            print(f"Критическая ошибка при обновлении {productID}: {str(e)}")
+        finally:
+            session.close()
 
     def start_tracking(self, productID):
         session = self.Session()
