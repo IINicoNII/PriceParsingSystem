@@ -176,7 +176,7 @@ class OzonParser:
             find_input.clear()
             find_input.send_keys(str(product_id))
             time.sleep(random.uniform(1, 2))
-
+            self.driver.save_screenshot('1.png')
             # Имитация человеческих действий
             action = ActionChains(self.driver)
             for _ in range(2):
@@ -187,6 +187,7 @@ class OzonParser:
                 time.sleep(random.uniform(0.1, 0.3))
 
             find_input.send_keys(Keys.ENTER)
+            self.driver.save_screenshot('2.png')
             time.sleep(random.uniform(3, 5))
 
             output_dict = self.extract_info()
